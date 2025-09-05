@@ -1,0 +1,129 @@
+name: Build macOS DMG
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Add electron-builder back for CI
+        run: pnpm add --save-dev electron-builder
+
+      - name: Create build config for electron-builder
+        run: |
+          cat > electron-builder.config.js << 'EOF'
+          module.exports = {
+            appId: "com.GhostxD.postboy",
+            productName: "PostBoy",
+            directories: {
+              output: "dist"
+            },
+            files: [
+              "src/**/*",
+              "node_modules/**/*",
+              "!src/assets/icons/png/**/*",
+              "!src/assets/icons/win/**/*"
+            ],
+            mac: {
+              icon: "src/assets/icons/mac/icon.icns",
+              category: "public.app-category.developer-tools",
+              target: [
+                {
+                  target: "dmg",
+                  arch: ["x64", "arm64"]
+                },
+                {
+                  target: "zip", 
+                  arch: ["x64", "arm64"]
+                }
+              ]
+            },
+            dmg: {
+              title: "PostBoy ${version}",
+              icon: "src/assets/icons/mac/icon.icns",
+              window: {
+                width: 660,
+                height: 500
+              },
+              contents: [
+                {
+                  x: 192,
+                  y: 344,
+                  type: "file"
+                },
+                {
+                  x: 448,
+                  y: 344,
+                  type: "link",
+                  path: "/Applications"
+                }
+              ]
+            }
+          }
+          EOF
+
+      - name: Build macOS DMG and ZIP
+        run: npx electron-builder --mac --config electron-builder.config.js
+
+      - name: List generated files
+        run: |
+          echo "Contents of dist directory:"
+          ls -la dist/
+          echo "DMG files:"
+          find dist -name "*.dmg" -ls
+          echo "ZIP files:"
+          find dist -name "*.zip" -ls
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: postboy-macos-v${{ github.ref_name }}
+          path: |
+            dist/*.dmg
+            dist/*.zip
+
+  release:
+    needs: build-macos
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: postboy-macos-v${{ github.ref_name }}
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
