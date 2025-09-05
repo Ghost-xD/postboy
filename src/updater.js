@@ -128,13 +128,13 @@ class AppUpdater {
     // Use main postboy repository for releases - no authentication needed
     autoUpdater.setFeedURL({
       provider: 'github',
-      owner: 'moodysaroha',
+      owner: 'Ghost-xDsaroha',
       repo: 'postboy',
       private: false,
       vPrefixedTagName: true
     });
 
-    console.log('Using main repository for updates - no authentication required (github:moodysaroha/postboy)');
+    console.log('Using main repository for updates - no authentication required (github:Ghost-xDsaroha/postboy)');
 
     this.setupEventHandlers();
     

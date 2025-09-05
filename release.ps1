@@ -154,7 +154,7 @@ Write-Info "  2. Create a GitHub Release"
 Write-Info "  3. Upload the release artifacts"
 Write-Info ""
 Write-Info "You can monitor the build progress at:"
-Write-Info "  https://github.com/moodysaroha/postboy/actions"
+Write-Info "  https://github.com/Ghost-xDsaroha/postboy/actions"
 Write-Info ""
 Write-Success "✓ Release process initiated successfully!"
 

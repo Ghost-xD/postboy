@@ -164,7 +164,7 @@ const menu = Menu.buildFromTemplate(template);
 app.whenReady().then(() => {
   // Ensure Windows uses a stable AppUserModelID so taskbar/Start icons map to our resources
   try {
-    const desiredAppId = 'com.moodysaroha.postboy';
+    const desiredAppId = 'com.GhostxDsaroha.postboy';
     if (process.platform === 'win32') {
       const currentId = app.getAppUserModelId && app.getAppUserModelId();
       if (!currentId || currentId !== desiredAppId) {
